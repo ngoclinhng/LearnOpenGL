@@ -40,8 +40,7 @@ project(Learnogl C CXX)
 
 # Make CMake aware of the cmake folder for local FindXX scripts, append rather
 # than set in case the use has passed their own additional paths via -D.
-# list(APPEND CMAKE_MODULE_PATH "${Learnogl_SOURCE_DIR}/cmake")
-# include(UpdateCacheVariable)
+list(APPEND CMAKE_MODULE_PATH "${Learnogl_SOURCE_DIR}/cmake")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${Learnogl_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${Learnogl_BINARY_DIR}/lib)
@@ -74,6 +73,11 @@ set(LIB_SUFFIX "${LIB_SUFFIX}" CACHE STRING
 
 set(CMAKE_RELEASE_POSTFIX "")
 set(CMAKE_DEBUG_POSTFIX "-debug")
+
+# Glog
+# We'll be using GLOG extensively for our logging system instead of relying on
+# assert or iostream.
+find_package(Glog REQUIRED)
 
 add_subdirectory(thirdparty)
 add_subdirectory(learnogl)
