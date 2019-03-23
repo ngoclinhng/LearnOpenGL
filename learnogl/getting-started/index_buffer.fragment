@@ -1,0 +1,8 @@
+#version 330 core
+
+in vec4 out_color_from_vertex_shader;
+out vec4 color;
+
+void main() {
+  color = out_color_from_vertex_shader;
+}

@@ -15,6 +15,9 @@
 #define STRINGNIFY(x)  STRINGNIFY_HELPER(x)
 #define STRINGNIFY_HELPER(x) #x
 
+// Helper macro to offset into buffer
+#define BUFFER_OFFSET(offset) (reinterpret_cast<char*>(NULL) + (offset))
+
 // Type trait to check whether a type is actually GLuint.
 template <typename T> struct is_gluint : public std::false_type {};
 template<> struct is_gluint<GLuint> : public std::true_type {};
@@ -36,7 +39,7 @@ GLFWwindow* CreateWindow(int width, int height, const char* title,
 // as c string.
 // Return an ID for this program to be used.
 GLuint CompileShaderFromSingleSourceString(GLenum shader_type,
-                                           const char* shader_source);
+                                           const std::string shader_source);
 
 // Build program from several shaders.
 // See [1] for the technique be used here. I know, i know, this is a bit

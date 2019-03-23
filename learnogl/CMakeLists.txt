@@ -74,5 +74,8 @@ endfunction (BUILD_EXAMPLE)
 
 # Getting started
 ################################################################################
-build_example(hello_world getting-started)
+set(SECTION_NAME getting-started)
 
+build_example(hello_world ${SECTION_NAME})
+build_example(colored_triangle ${SECTION_NAME})
+build_example(index_buffer ${SECTION_NAME})

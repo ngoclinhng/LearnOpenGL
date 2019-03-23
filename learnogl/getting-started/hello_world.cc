@@ -43,18 +43,14 @@ int main() {
     std::string vertex_string = ReadFileContent(VERTEX_SHADER_FILE);
     std::string fragment_string = ReadFileContent(FRAGMENT_SHADER_FILE);
 
-    const char* vertex_shader_source = vertex_string.c_str();
-    const char* fragment_shader_source = fragment_string.c_str();
-
     // Compile vertex shader
     GLuint vertex_shader =
-        CompileShaderFromSingleSourceString(GL_VERTEX_SHADER,
-                                            vertex_shader_source);
+        CompileShaderFromSingleSourceString(GL_VERTEX_SHADER, vertex_string);
 
     // Compile fragment shader
     GLuint fragment_shader =
         CompileShaderFromSingleSourceString(GL_FRAGMENT_SHADER,
-                                            fragment_shader_source);
+                                            fragment_string);
 
     // Create program
     GLuint program = CreateProgramFromShaders(vertex_shader,
