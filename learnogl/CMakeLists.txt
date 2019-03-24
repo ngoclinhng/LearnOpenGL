@@ -57,19 +57,25 @@ function (BUILD_EXAMPLE TARGET_NAME SECTION)
   set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${SECTION})
   set(DESTINATION_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SECTION})
 
-  file(GLOB DATA_FILES
-    # Insert more file extensions here
-    ${SOURCE_DIR}/*.vertex
-    ${SOURCE_DIR}/*.fragment)
+  set(VERTEX_SHADER_FILE_PATH ${SOURCE_DIR}/${TARGET_NAME}.vertex)
+  set(FRAGMENT_SHADER_FILE_PATH ${SOURCE_DIR}/${TARGET_NAME}.fragment)
 
-  foreach (FULL_FILE_PATH ${DATA_FILES})
-    message(STATUS "Copying file ${FULL_FILE_NAME} to ${DESTINATION_DIR}")
-    get_filename_component(FILE_NAME ${FULL_FILE_PATH} NAME)
-    add_custom_command(
-      TARGET ${TARGET_NAME} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E
-      copy ${FULL_FILE_PATH} ${DESTINATION_DIR}/${FILE_NAME})
-  endforeach()
+  get_filename_component(VERTEX_SHADER_FILE_NAME
+    ${VERTEX_SHADER_FILE_PATH} NAME)
+  get_filename_component(FRAGMENT_SHADER_FILE_NAME
+    ${FRAGMENT_SHADER_FILE_PATH} NAME)
+
+  add_custom_command( TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E
+    copy ${VERTEX_SHADER_FILE_PATH} $<TARGET_FILE_DIR:${TARGET_NAME}>
+    COMMENT "Copying file ${VERTEX_SHADER_FILE_PATH} to ${DESTINATION_DIR}"
+    VERBATIM)
+    
+  add_custom_command( TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E
+    copy ${FRAGMENT_SHADER_FILE_PATH} $<TARGET_FILE_DIR:${TARGET_NAME}>
+    COMMENT "Copying file ${FRAGMENT_SHADER_FILE_PATH} to ${DESTINATION_DIR}"
+    VERBATIM)
 endfunction (BUILD_EXAMPLE)
 
 # Getting started
@@ -79,3 +85,4 @@ set(SECTION_NAME getting-started)
 build_example(hello_world ${SECTION_NAME})
 build_example(colored_triangle ${SECTION_NAME})
 build_example(index_buffer ${SECTION_NAME})
+build_example(uniform ${SECTION_NAME})

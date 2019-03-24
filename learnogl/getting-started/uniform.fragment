@@ -1,0 +1,9 @@
+#version 330 core
+
+out vec4 out_vertex_color;
+
+uniform vec4 vertex_color;
+
+void main() {
+  out_vertex_color = vertex_color;
+}

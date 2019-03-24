@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <string>
+#include <cmath>
 
 #include "utility/utility.h"
 #include "glog/logging.h"
@@ -25,10 +26,10 @@ const unsigned int SCREEN_HEIGHT = 600;
 #undef FRAGMENT_SHADER_FILE
 #endif
 
-#define VERTEX_SHADER_FILE                                              \
+#define VERTEX_SHADER_FILE \
   STRINGNIFY(TARGET_OUTPUT_BINARY_DIR) "/uniform.vertex"
 
-#define FRAGMENT_SHADER_FILE                                              \
+#define FRAGMENT_SHADER_FILE                                    \
   STRINGNIFY(TARGET_OUTPUT_BINARY_DIR) "/uniform.fragment"
 
 
@@ -63,24 +64,11 @@ int main(const int argc, const char* argv[]) {
 
   // Vertices
   const unsigned int num_vertices = 3;
-  const unsigned int num_coordinate_components_per_vertex = 3;
-  const unsigned int vertices_offset = 0;
   GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f,    // left
     0.5f, -0.5f, 0.0f,     // right
     0.0f, 0.5f, 0.0f       // top
   };
-
-  // Colors
-  const unsigned int num_color_components_per_vertex = 3;
-  GLfloat colors[] = {
-    1.0f, 0.0f, 0.0f,  // red
-    0.0f, 1.0f, 0.0f,  // green
-    0.0f, 0.0f, 1.0f   // blue
-  };
-
-  const unsigned int num_components_per_vertex =
-      num_coordinate_components_per_vertex * num_color_components_per_vertex;
 
   // Create the "remember all".
   GLuint vao;
@@ -92,43 +80,15 @@ int main(const int argc, const char* argv[]) {
   GLuint vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER,
-               num_vertices * num_components_per_vertex * sizeof(GLfloat),
-               nullptr, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, num_vertices * 3 * sizeof(GLfloat), vertices,
+               GL_STATIC_DRAW);
 
-  // Copy data from CPU to GPU
-  glBufferSubData(GL_ARRAY_BUFFER, vertices_offset,
-                  num_vertices * num_coordinate_components_per_vertex *
-                  sizeof(GLfloat), vertices);
-  glBufferSubData(GL_ARRAY_BUFFER,
-                  num_vertices * num_coordinate_components_per_vertex *
-                  sizeof(GLfloat),
-                  num_vertices * num_color_components_per_vertex *
-                  sizeof(GLfloat), colors);
-
-  // Now we have data in the GPU, how can we tell OpenGL shaders program to
-  // fetch these data. Easy!
-
-  // Tell vertex shader how to use position attribute.
-  // GLuint vertex_position;
-  // vertex_position = glGetAttribLocation(program, "vertex_position");
-  // glEnableVertexAttribArray(vertex_position);
-  glVertexAttribPointer(0, num_coordinate_components_per_vertex,
-                        GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,
+                        reinterpret_cast<void*>(0));
   glEnableVertexAttribArray(0);
 
-  // Tell fragment shader how to use color attribute
-  // GLuint vertex_color;
-  // vertex_color = glGetAttribLocation(program, "vertex_color");
-  // glEnableVertexAttribArray(vertex_color);
-  glVertexAttribPointer(1, num_color_components_per_vertex,
-                        GL_FLOAT, GL_FALSE, 0,
-                        BUFFER_OFFSET(num_vertices *
-                                      num_coordinate_components_per_vertex *
-                                      sizeof(GLfloat)));
-  glEnableVertexAttribArray(1);
-
-  glUseProgram(program);
+  // Uniform color
+  GLuint vertex_color_id;
 
   // Render loop
   while (!glfwWindowShouldClose(window)) {
@@ -138,6 +98,15 @@ int main(const int argc, const char* argv[]) {
     // Render
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // Use program
+    glUseProgram(program);
+
+    // Update uniform color
+    GLfloat time = glfwGetTime();
+    GLfloat green_value = std::sinf(time) / 2.0f + 0.5f;
+    vertex_color_id = glGetUniformLocation(program, "vertex_color");
+    glUniform4f(vertex_color_id, 0.0f, green_value, 0.0f, 1.0f);
 
     // Draw
     glBindVertexArray(vao);
