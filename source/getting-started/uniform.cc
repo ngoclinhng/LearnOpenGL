@@ -1,12 +1,8 @@
 // Copyright 2018
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <string>
 #include <cmath>
 
-#include "utility/utility.h"
-#include "glog/logging.h"
+#include "utility/gl.h"
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void ProcessUserInput(GLFWwindow* window);
@@ -14,8 +10,8 @@ void ProcessUserInput(GLFWwindow* window);
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
 
-#ifndef TARGET_OUTPUT_BINARY_DIR
-#error TARGET_OUTPUT_BINARY_DIR is undefined
+#ifndef SHADERS_DESTINATION_DIR
+#error SHADERS_DESTINATION_DIR is undefined
 #endif
 
 #if defined(VERTEX_SHADER_FILE)
@@ -27,10 +23,10 @@ const unsigned int SCREEN_HEIGHT = 600;
 #endif
 
 #define VERTEX_SHADER_FILE \
-  STRINGNIFY(TARGET_OUTPUT_BINARY_DIR) "/uniform.vertex"
+  STRINGNIFY(SHADERS_DESTINATION_DIR) "uniform.vertex"
 
 #define FRAGMENT_SHADER_FILE                                    \
-  STRINGNIFY(TARGET_OUTPUT_BINARY_DIR) "/uniform.fragment"
+  STRINGNIFY(SHADERS_DESTINATION_DIR) "uniform.fragment"
 
 
 int main(const int argc, const char* argv[]) {
@@ -47,20 +43,7 @@ int main(const int argc, const char* argv[]) {
     return -1;
   }
 
-  // Load shaders source
-  std::string vertex_string = ReadFileContent(VERTEX_SHADER_FILE);
-  std::string fragment_string = ReadFileContent(FRAGMENT_SHADER_FILE);
-
-  // Compile shaders
-  GLuint vertex_shader =
-      CompileShaderFromSingleSourceString(GL_VERTEX_SHADER, vertex_string);
-  GLuint fragment_shader =
-      CompileShaderFromSingleSourceString(GL_FRAGMENT_SHADER, fragment_string);
-
-  // Create program
-  GLuint program = CreateProgramFromShaders(vertex_shader, fragment_shader);
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
+  Shader program(VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
 
   // Vertices
   const unsigned int num_vertices = 3;
@@ -77,18 +60,11 @@ int main(const int argc, const char* argv[]) {
 
   // Create a buffer (which is nothing fancy rather than jsust an array
   // on GPU to store data).
-  GLuint vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, num_vertices * 3 * sizeof(GLfloat), vertices,
-               GL_STATIC_DRAW);
+  VertexBuffer vbo(num_vertices * 3 * sizeof(GLfloat), vertices);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,
                         reinterpret_cast<void*>(0));
   glEnableVertexAttribArray(0);
-
-  // Uniform color
-  GLuint vertex_color_id;
 
   // Render loop
   while (!glfwWindowShouldClose(window)) {
@@ -100,13 +76,12 @@ int main(const int argc, const char* argv[]) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Use program
-    glUseProgram(program);
+    program.UseProgram();
 
     // Update uniform color
     GLfloat time = glfwGetTime();
     GLfloat green_value = std::sinf(time) / 2.0f + 0.5f;
-    vertex_color_id = glGetUniformLocation(program, "vertex_color");
-    glUniform4f(vertex_color_id, 0.0f, green_value, 0.0f, 1.0f);
+    program.SetUniform4f("vertex_color", 0.0f, green_value, 0.0f, 1.0f);
 
     // Draw
     glBindVertexArray(vao);
@@ -118,7 +93,6 @@ int main(const int argc, const char* argv[]) {
 
   // optional: de-allocate all resources once they've outlived their purpose
   glDeleteVertexArrays(1, &vao);
-  glDeleteBuffers(1, &vbo);
 
   // glfw: terminate, clearing all previously allocated GLFW resources.
   glfwTerminate();

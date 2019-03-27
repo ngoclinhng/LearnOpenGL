@@ -1,7 +1,6 @@
 // Copyright 2018.
 
-#include "utility/utility.h"
-#include "glog/logging.h"
+#include "utility/common.h"
 
 GLFWwindow* CreateWindow(int width, int height, const char* title,
                          GLFWmonitor* monitor, GLFWwindow* share) {
